@@ -7,6 +7,7 @@ import { showCommand } from "./commands/show";
 import { applyCommand } from "./commands/apply";
 import { schemaCommand } from "./commands/schema";
 import { addCommand } from "./commands/add";
+import { rmCommand } from "./commands/rm";
 
 const program = new Command();
 
@@ -21,5 +22,6 @@ program.addCommand(showCommand);
 program.addCommand(applyCommand);
 program.addCommand(schemaCommand);
 program.addCommand(addCommand);
+program.addCommand(rmCommand);
 
 program.parse(process.argv);

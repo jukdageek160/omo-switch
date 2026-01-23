@@ -193,4 +193,36 @@ export class StoreManager {
 
     return { added, existing };
   }
+
+  /**
+   * Delete a profile by ID.
+   * Removes the profile from the index and deletes the config file.
+   * Returns true if the profile was deleted, false if it didn't exist.
+   */
+  deleteProfile(profileId: string): boolean {
+    const index = this.loadIndex();
+    const profileIndex = index.profiles.findIndex((p) => p.id === profileId);
+
+    if (profileIndex === -1) {
+      return false;
+    }
+
+    // Remove from index
+    index.profiles.splice(profileIndex, 1);
+
+    // Reset active profile if needed
+    if (index.activeProfileId === profileId) {
+      index.activeProfileId = null;
+    }
+
+    this.saveIndex(index);
+
+    // Delete config file
+    const configPath = this.getProfileConfigPath(profileId);
+    if (configPath && fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
+    }
+
+    return true;
+  }
 }
