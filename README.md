@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="shared/assets/logo.png" alt="omo-switch logo" width="100%" />
+</p>
+
 # omo-switch
 
 [![npm version](https://badge.fury.io/js/omo-switch-cli.svg)](https://badge.fury.io/js/omo-switch-cli)
