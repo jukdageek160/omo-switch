@@ -1,0 +1,198 @@
+name: CI/CD Pipeline
+
+on:
+    push:
+        branches:
+            - main
+        tags:
+            - 'v*'
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: npm ci
+            - run: npm run build
+            - run: npm test
+
+    release-and-publish:
+        runs-on: ubuntu-latest
+        # Only run on tag pushes (manual release)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        needs: build
+
+        permissions:
+            contents: write
+            id-token: write  # Required for OIDC / Trusted Publishers
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Configure Git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            # Ensure npm 11.5.1 or later for Trusted Publishers support
+            - name: Update npm to latest version
+              run: npm install -g npm@latest
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Get version from tag
+              id: tag-version
+              run: |
+                  TAG_NAME=${GITHUB_REF#refs/tags/}
+                  echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
+                  echo "version=${TAG_NAME#v}" >> $GITHUB_OUTPUT
+                  echo "Tag: ${TAG_NAME}, Version: ${TAG_NAME#v}"
+
+            - name: Verify package.json version matches tag
+              run: |
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
+                  TAG_VERSION="${{ steps.tag-version.outputs.version }}"
+                  
+                  if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+                      echo "❌ Error: package.json version ($PACKAGE_VERSION) does not match tag version ($TAG_VERSION)"
+                      echo "Please update package.json version to match the tag before creating the release."
+                      exit 1
+                  fi
+                  
+                  echo "✅ Version check passed: $PACKAGE_VERSION"
+
+            - name: Build package
+              run: npm run build
+
+            - name: Generate Changelog
+              id: changelog
+              run: |
+                  TAG_NAME="${{ steps.tag-version.outputs.tag }}"
+                  PREV_TAG=$(git describe --tags --abbrev=0 "${TAG_NAME}^" 2>/dev/null || echo "")
+                  
+                  if [ -z "$PREV_TAG" ]; then
+                      echo "No previous tag found, generating full changelog"
+                      COMMIT_RANGE="${TAG_NAME}"
+                  else
+                      echo "Previous tag: $PREV_TAG"
+                      COMMIT_RANGE="${PREV_TAG}..${TAG_NAME}"
+                  fi
+                  
+                  # Generate changelog with categories
+                  {
+                      echo "## 🎉 What's New"
+                      echo ""
+                      
+                      # Features
+                      FEATURES=$(git log $COMMIT_RANGE --pretty=format:"- %s" --grep="^feat" --grep="^feature" -i)
+                      if [ -n "$FEATURES" ]; then
+                          echo "### ✨ Features"
+                          echo "$FEATURES"
+                          echo ""
+                      fi
+                      
+                      # Bug Fixes
+                      FIXES=$(git log $COMMIT_RANGE --pretty=format:"- %s" --grep="^fix" -i)
+                      if [ -n "$FIXES" ]; then
+                          echo "### 🐛 Bug Fixes"
+                          echo "$FIXES"
+                          echo ""
+                      fi
+                      
+                      # Documentation
+                      DOCS=$(git log $COMMIT_RANGE --pretty=format:"- %s" --grep="^docs" -i)
+                      if [ -n "$DOCS" ]; then
+                          echo "### 📚 Documentation"
+                          echo "$DOCS"
+                          echo ""
+                      fi
+                      
+                      # CI/CD
+                      CI=$(git log $COMMIT_RANGE --pretty=format:"- %s" --grep="^ci" -i)
+                      if [ -n "$CI" ]; then
+                          echo "### 🔧 CI/CD"
+                          echo "$CI"
+                          echo ""
+                      fi
+                      
+                      # Refactoring
+                      REFACTOR=$(git log $COMMIT_RANGE --pretty=format:"- %s" --grep="^refactor" -i)
+                      if [ -n "$REFACTOR" ]; then
+                          echo "### ♻️ Refactoring"
+                          echo "$REFACTOR"
+                          echo ""
+                      fi
+                      
+                      # Other changes
+                      OTHER=$(git log $COMMIT_RANGE --pretty=format:"- %s" --invert-grep --grep="^feat" --grep="^fix" --grep="^perf" --grep="^docs" --grep="^ci" --grep="^refactor" -i)
+                      if [ -n "$OTHER" ]; then
+                          echo "### 🔨 Other Changes"
+                          echo "$OTHER"
+                          echo ""
+                      fi
+                      
+                      # Full changelog link
+                      if [ -n "$PREV_TAG" ]; then
+                          echo "---"
+                          echo ""
+                          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG_NAME}"
+                      fi
+                  } > /tmp/changelog.md
+                  
+                  cat /tmp/changelog.md
+
+            - name: Create Release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  TAG_NAME="${{ steps.tag-version.outputs.tag }}"
+                  gh release create "${TAG_NAME}" \
+                      --title "Release ${TAG_NAME}" \
+                      --notes-file /tmp/changelog.md
+
+            - name: Check if version exists on npm
+              id: check-npm-version
+              run: |
+                  PACKAGE_NAME=$(node -p "require('./package.json').name")
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+                  if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null; then
+                      echo "exists=true" >> $GITHUB_OUTPUT
+                      echo "⚠️  Version ${PACKAGE_VERSION} already exists on npm"
+                  else
+                      echo "exists=false" >> $GITHUB_OUTPUT
+                      echo "✅ Version ${PACKAGE_VERSION} does not exist on npm, will publish"
+                  fi
+
+            # Publish using OIDC (Trusted Publishers)
+            # No NPM_TOKEN needed - authentication via id-token: write permission
+            - name: Publish to npm (Trusted Publishers)
+              if: steps.check-npm-version.outputs.exists == 'false'
+              run: npm publish --access public
+
+            - name: Skip publishing (version exists)
+              if: steps.check-npm-version.outputs.exists == 'true'
+              run: |
+                  echo "⚠️  Skipping npm publish: version already exists on npm registry"
+                  echo "This is not an error - the package version was already published."
