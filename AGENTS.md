@@ -4,7 +4,7 @@
 **Project:** omo-switch - Profile manager for oh-my-opencode
 
 ## OVERVIEW
-Hybrid CLI + Flutter desktop app for managing oh-my-opencode configuration profiles. CLI is production-ready; Flutter GUI is WIP scaffold.
+CLI tool for managing oh-my-opencode configuration profiles.
 
 ## COMMANDS
 
@@ -14,6 +14,7 @@ npm run build                    # Compile TypeScript to dist/
 npm run dev -- <args>           # Run CLI directly with ts-node
 npm link && omo-switch --help    # Test globally
 
+
 # Testing
 npm test                        # Run all tests (Vitest)
 npm run test:watch              # Watch mode
@@ -22,9 +23,6 @@ npm run test:coverage           # Coverage report (text, json, html)
 # Single Test File
 npx vitest run src/commands/add.test.ts
 npm test -- src/commands/add.test.ts
-
-# Flutter (WIP)
-cd app && flutter run
 ```
 
 ## STRUCTURE
@@ -150,6 +148,4 @@ Run single test: `npx vitest run src/commands/add.test.ts`
 - CLI targets Windows primary, XDG paths for Linux/macOS
 - Schema URL: `https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json`
 - Bundled schema fallback in `shared/assets/oh-my-opencode.schema.json`
-- models.dev API best-effort (non-blocking on failure)
-- `app/lib/main.dart` is Flutter demo scaffold, NOT actual GUI implementation
 - No ESLint/Prettier configured - follow existing conventions
