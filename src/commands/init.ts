@@ -53,20 +53,6 @@ export const initCommand = new Command("init")
         }
       }
 
-      spinner.text = "Downloading models list (best-effort)...";
-      try {
-        await downloadFile(
-          "https://models.dev/api.json",
-          store.getCacheModelsPath(),
-          "models.dev.json",
-          { source: "models.dev" }
-        );
-        spinner.succeed("Models list downloaded");
-      } catch (err) {
-        spinner.info(`Failed to download models list: ${err instanceof Error ? err.message : "Unknown error"}`);
-        spinner.text = "Continuing without models list...";
-      }
-
       spinner.text = "Creating default profile...";
       
       // Check if user config already exists (jsonc or json)

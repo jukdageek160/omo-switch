@@ -11,7 +11,6 @@ export class StoreManager {
   private readonly indexPath: string;
   private readonly configsPath: string;
   private readonly cacheSchemaPath: string;
-  private readonly cacheModelsPath: string;
   private readonly backupsPath: string;
 
   constructor() {
@@ -21,7 +20,6 @@ export class StoreManager {
     this.indexPath = path.join(this.storePath, "index.json");
     this.configsPath = path.join(this.storePath, "configs");
     this.cacheSchemaPath = path.join(this.storePath, "cache", "schema");
-    this.cacheModelsPath = path.join(this.storePath, "cache", "models");
     this.backupsPath = path.join(this.storePath, "backups");
   }
 
@@ -41,10 +39,6 @@ export class StoreManager {
     return this.cacheSchemaPath;
   }
 
-  getCacheModelsPath(): string {
-    return this.cacheModelsPath;
-  }
-
   getBackupsPath(): string {
     return this.backupsPath;
   }
@@ -54,7 +48,6 @@ export class StoreManager {
       this.storePath,
       this.configsPath,
       this.cacheSchemaPath,
-      this.cacheModelsPath,
       this.backupsPath,
     ];
     for (const dir of dirs) {

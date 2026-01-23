@@ -9,7 +9,7 @@ vi.mock("fs", () => ({
 }));
 
 vi.mock("ora", () => {
-  let mockSpinner: any = {
+  const mockSpinner: any = {
     start: vi.fn(function(this: any) { this.running = true; return this; }),
     text: "",
     succeed: vi.fn(function(this: any) { this.running = false; return this; }),
@@ -18,7 +18,7 @@ vi.mock("ora", () => {
     warn: vi.fn(function(this: any) { this.running = false; return this; }),
   };
   return {
-    default: vi.fn(() => mockSpinner) as typeof import("ora").default,
+    default: vi.fn(() => mockSpinner),
   };
 });
 
@@ -64,12 +64,12 @@ describe("initCommand", () => {
 
     vi.spyOn(StoreManager.prototype, "ensureDirectories");
     vi.spyOn(StoreManager.prototype, "getCacheSchemaPath").mockReturnValue("/cache/schema");
-    vi.spyOn(StoreManager.prototype, "getCacheModelsPath").mockReturnValue("/cache/models");
     vi.spyOn(StoreManager.prototype, "saveCacheFile");
     vi.spyOn(StoreManager.prototype, "saveProfileConfig");
     vi.spyOn(StoreManager.prototype, "saveIndex");
     vi.spyOn(StoreManager.prototype, "getProfileConfigRaw").mockReturnValue(null);
     vi.spyOn(StoreManager.prototype, "loadIndex").mockReturnValue({
+      storeVersion: "1.0.0",
       profiles: [],
       activeProfileId: null,
     });
@@ -120,7 +120,7 @@ describe("initCommand", () => {
     }
   }
 
-  it("initializes store, downloads schema and models, creates default profile", async () => {
+  it("initializes store and downloads schema, creates default profile", async () => {
     await runInit();
 
     expect(downloadFile).toHaveBeenCalledWith(
@@ -129,18 +129,10 @@ describe("initCommand", () => {
       "oh-my-opencode.schema.json",
       { source: "github" }
     );
-    expect(downloadFile).toHaveBeenCalledWith(
-      "https://models.dev/api.json",
-      expect.any(String),
-      "models.dev.json",
-      { source: "models.dev" }
-    );
   });
 
   it("uses bundled schema when GitHub download fails", async () => {
-    vi.mocked(downloadFile)
-      .mockRejectedValueOnce(new Error("Network error"))
-      .mockResolvedValueOnce(true);
+    vi.mocked(downloadFile).mockRejectedValueOnce(new Error("Network error"));
 
     await runInit();
 
@@ -161,16 +153,7 @@ describe("initCommand", () => {
     expect(mockSpinner.succeed).toHaveBeenCalledWith(expect.stringContaining("Using cached"));
   });
 
-  it("continues without models list when models.dev download fails", async () => {
-    vi.mocked(downloadFile)
-      .mockResolvedValueOnce(true)
-      .mockRejectedValueOnce(new Error("Models error"));
 
-    await runInit();
-
-    expect(mockSpinner.info).toHaveBeenCalledWith(expect.stringContaining("Failed to download models"));
-    expect(mockSpinner.succeed).toHaveBeenCalled();
-  });
 
   it("skips default profile creation when existing config detected", async () => {
     vi.mocked(readBundledAsset).mockReturnValue(null);
@@ -180,6 +163,7 @@ describe("initCommand", () => {
       return true;
     });
     vi.spyOn(StoreManager.prototype, "loadIndex").mockReturnValue({
+      storeVersion: "1.0.0",
       profiles: [],
       activeProfileId: null,
     });
