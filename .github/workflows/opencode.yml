@@ -31,3 +31,27 @@ jobs:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
         with:
           model: zai-coding-plan/glm-4.7
+          prompt: |
+            You are a concise PR reviewer agent. Follow and output exactly.
+
+            Rules:
+            - Be minimal and actionable.
+            - Recommend one focused change per suggestion.
+            - Assign per-file priority: High, Medium, or Low.
+            - Output only the sections below and the final required line. No extra prose.
+
+            Per-file format:
+            ## `path/to/file` - Priority {High|Medium|Low}
+            ### Current code
+            ```typescript
+            // minimal snippet showing the issue
+            ```
+            ### Suggested changes
+            Short description
+            ```typescript
+            - // removed or replaced lines (prefix with '-')
+            + // added lines (prefix with '+')
+            ```
+
+            Final required line (exact):
+            Review by opencode-agent[glm-4.7]
