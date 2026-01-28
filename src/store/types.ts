@@ -32,10 +32,12 @@ export type ConfigType = "omo" | "slim";
 
 export interface GlobalSettings {
   activeType: ConfigType;
+  backupRetentionDays?: number;
 }
 
 export const DEFAULT_SETTINGS: GlobalSettings = {
   activeType: "omo",
+  backupRetentionDays: 30,
 };
 
 // ============ OMOS Types ============

@@ -1,22 +1,20 @@
 import * as fs from "fs";
 import * as path from "path";
 
-const BACKUP_RETENTION_DAYS = 30;
-
 /**
  * Clean up old backup files in the specified directory.
- * Removes files older than BACKUP_RETENTION_DAYS (30 days).
+ * Removes files older than retentionDays (defaults to 30 days).
  * 
  * Backup files are expected to have ISO timestamp prefix format:
  * YYYY-MM-DDTHH-MM-SS-sssZ__filename.json
  */
-export function cleanOldBackups(backupsPath: string): number {
+export function cleanOldBackups(backupsPath: string, retentionDays: number = 30): number {
   if (!fs.existsSync(backupsPath)) {
     return 0;
   }
 
   const now = Date.now();
-  const retentionMs = BACKUP_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
   const cutoffTime = now - retentionMs;
 
   let deletedCount = 0;

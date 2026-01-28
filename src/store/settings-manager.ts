@@ -38,6 +38,7 @@ export class SettingsManager {
       const parsed = JSON.parse(content) as Partial<GlobalSettings>;
       return {
         activeType: parsed.activeType ?? DEFAULT_SETTINGS.activeType,
+        backupRetentionDays: parsed.backupRetentionDays ?? DEFAULT_SETTINGS.backupRetentionDays,
       };
     } catch {
       return { ...DEFAULT_SETTINGS };

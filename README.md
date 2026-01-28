@@ -448,9 +448,24 @@ Ensure your terminal has write permissions to:
 ### Finding Backups
 
 If something goes wrong, find your original configuration in:
+- **Global**: `~/.config/omo-switch/backups/<ISO_TIMESTAMP>__oh-my-opencode.jsonc`
+- **Project**: `<project>/.opencode/backups/<ISO_TIMESTAMP>__oh-my-opencode.jsonc`
+
+### Backup Retention Policy
+
+By default, `omo-switch` keeps backups for **30 days**. Old backup files are automatically scanned and removed whenever a new backup is created (e.g., when running `apply`).
+
+You can customize the retention period by editing your global `settings.json` file:
+
+**File**: `~/.config/omo-switch/settings.json`
+```json
+{
+  "activeType": "omo",
+  "backupRetentionDays": 14
+}
 ```
-~/.config/omo-switch/backups/<ISO_TIMESTAMP>__oh-my-opencode.jsonc
-```
+
+Set `backupRetentionDays` to a larger number to keep backups longer, or a smaller number to save space.
 
 ## License
 

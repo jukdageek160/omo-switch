@@ -8,6 +8,7 @@ import {
   DEFAULT_OMOS_CONFIG,
 } from "./types";
 import { cleanOldBackups } from "../utils/backup-cleaner";
+import { SettingsManager } from "./settings-manager";
 import {
   getOmosConfigTargetPath,
   getOmosProjectTargetPath,
@@ -179,7 +180,9 @@ export class OmosConfigManager {
     }
 
     // Clean up old backups before creating new one
-    cleanOldBackups(this.backupsPath);
+    const settings = new SettingsManager();
+    const retentionDays = settings.loadSettings().backupRetentionDays;
+    cleanOldBackups(this.backupsPath, retentionDays);
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupFileName = `${timestamp}__oh-my-opencode-slim.json`;

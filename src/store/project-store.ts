@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProjectRc } from "./types";
 import { cleanOldBackups } from "../utils/backup-cleaner";
+import { SettingsManager } from "./settings-manager";
 import {
   getProjectConfigsPath,
   getProjectTargetPath,
@@ -152,7 +153,9 @@ export class ProjectStoreManager {
     }
 
     // Clean up old backups before creating new one
-    cleanOldBackups(this.backupsPath);
+    const settings = new SettingsManager();
+    const retentionDays = settings.loadSettings().backupRetentionDays;
+    cleanOldBackups(this.backupsPath, retentionDays);
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupFileName = `${timestamp}__${path.basename(configPath)}`;
